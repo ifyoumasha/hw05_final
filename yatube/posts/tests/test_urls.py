@@ -28,7 +28,6 @@ class PostURLTests(TestCase):
         cache.clear()
         self.guest_user = Client()
 
-
     def test_guest_user_exists_at_desired_location(self):
         """Проверяет доступность страниц для неавторизованного клиента."""
         urls = {
@@ -63,7 +62,6 @@ class PostURLTests(TestCase):
             with self.subTest(page_address=page_address):
                 response = self.guest_user.get(page)
                 self.assertRedirects(response, page_address)
-
 
     def test_user_author_url_exists_at_desired_location(self):
         """Проверяет доступность страниц для автора."""

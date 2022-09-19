@@ -228,10 +228,10 @@ class FollowTests(TestCase):
         self.assertEqual(
             follow_count_after_follow, follow_count + NUMBER_OF_FOLLOW
         )
-        self.assertTrue(Follow.objects.filter(  
-                        user=self.user_authorized, 
+        self.assertTrue(Follow.objects.filter(
+                        user=self.user_authorized,
                         author=self.user_author
-                        ).exists()) 
+                        ).exists())
 
     def test_authorized_user_unfollow_other_users(self):
         """
@@ -255,11 +255,10 @@ class FollowTests(TestCase):
             follow_count_after_follow - NUMBER_OF_FOLLOW,
             follow_count_after_unfollow
         )
-        self.assertFalse(Follow.objects.filter(  
-                        user=self.user_authorized, 
-                        author=self.user_author
-                        ).exists()) 
-
+        self.assertFalse(Follow.objects.filter(
+                            user=self.user_authorized,
+                            author=self.user_author
+                        ).exists())
 
     def test_new_post_user_in_follow(self):
         """
@@ -315,9 +314,11 @@ class PaginatorViewsTest(TestCase):
             description='Тестовое описание группы',
         )
         Post.objects.bulk_create(
-            Post(text=f'Тестовый текст №{post}',
+            Post(
+                text=f'Тестовый текст №{post}',
                 author=cls.user_author,
-                group=cls.group)for post in range(NUMBER_OF_POSTS_TEST))
+                group=cls.group
+            )for post in range(NUMBER_OF_POSTS_TEST))
 
     def test_first_page_contains_ten_records(self):
         cache.clear()
