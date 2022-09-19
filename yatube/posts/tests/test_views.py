@@ -255,10 +255,12 @@ class FollowTests(TestCase):
             follow_count_after_follow - NUMBER_OF_FOLLOW,
             follow_count_after_unfollow
         )
-        self.assertFalse(Follow.objects.filter(
-                            user=self.user_authorized,
-                            author=self.user_author
-                        ).exists())
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user_authorized,
+                author=self.user_author
+            ).exists()
+        )
 
     def test_new_post_user_in_follow(self):
         """
