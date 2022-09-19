@@ -24,10 +24,13 @@ class PostURLTests(TestCase):
             group=cls.group
         )
 
-    def test_guest_user_exists_at_desired_location(self):
-        """Проверяет доступность страниц для неавторизованного клиента."""
+    def setUp(self):
         cache.clear()
         self.guest_user = Client()
+
+
+    def test_guest_user_exists_at_desired_location(self):
+        """Проверяет доступность страниц для неавторизованного клиента."""
         urls = {
             '/': HTTPStatus.OK,
             f'/group/{PostURLTests.group.slug}/': HTTPStatus.OK,
@@ -48,24 +51,22 @@ class PostURLTests(TestCase):
         Проверяет редирект для неавторизованного клиента
         со страницы создания и редактирования поста.
         """
-        self.guest_user = Client()
         login_url = reverse('users:login')
-        self.assertRedirects(
-            self.guest_user.get('/create/'),
-            (f'{login_url}?next=/create/')
-        )
-        self.assertRedirects(
-            self.guest_user.get(f'/posts/{PostURLTests.post.id}/edit/'),
-            (f'{login_url}?next=/posts/{self.post.id}/edit/')
-        )
-        self.assertRedirects(
-            self.guest_user.get(f'/posts/{PostURLTests.post.id}/comment/'),
-            (f'{login_url}?next=/posts/{self.post.id}/comment/')
-        )
+        page_name = {
+            ('/create/'): (f'{login_url}?next=/create/'),
+            (f'/posts/{PostURLTests.post.id}/edit/'):
+                (f'{login_url}?next=/posts/{self.post.id}/edit/'),
+            (f'/posts/{PostURLTests.post.id}/comment/'):
+                (f'{login_url}?next=/posts/{self.post.id}/comment/')
+        }
+        for page, page_address in page_name.items():
+            with self.subTest(page_address=page_address):
+                response = self.guest_user.get(page)
+                self.assertRedirects(response, page_address)
+
 
     def test_user_author_url_exists_at_desired_location(self):
         """Проверяет доступность страниц для автора."""
-        cache.clear()
         urls = {
             '/': HTTPStatus.OK,
             f'/group/{PostURLTests.group.slug}/': HTTPStatus.OK,
@@ -82,7 +83,6 @@ class PostURLTests(TestCase):
 
     def test_user_authorized_url_exists_at_desired_location(self):
         """Проверяет доступность страниц для авторизованного клиента."""
-        cache.clear()
         self.user_authorized = User.objects.create_user(
             username='user_authorized')
         self.authorized = Client()
@@ -115,7 +115,6 @@ class PostURLTests(TestCase):
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
-        cache.clear()
         templates = {
             '/': 'posts/index.html',
             f'/group/{PostURLTests.group.slug}/': 'posts/group_list.html',

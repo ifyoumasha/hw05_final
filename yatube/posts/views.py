@@ -1,16 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.cache import cache_page
 from posts.forms import CommentForm, PostForm
 from posts.models import Follow, Group, Post, User
 
 NUMBER_OF_POSTS = 10
 
 
-@cache_page(20)
 def index(request):
-    post_list = Post.objects.all().select_related('author', 'group')
+    post_list = Post.objects.select_related('author', 'group')
     paginator = Paginator(post_list, NUMBER_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -22,8 +20,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    post_list = Post.objects.filter(
-        group=group).select_related('author', 'group')
+    post_list = group.posts.all()
     paginator = Paginator(post_list, NUMBER_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -36,11 +33,9 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    following = request.user.is_authenticated
-    if following:
-        following = author.following.filter(user=request.user).exists()
-    post_list = Post.objects.select_related('author', 'group').filter(
-        author__username=username)
+    following = request.user.is_authenticated and author.following.filter(
+        user=request.user).exists()
+    post_list = author.posts.all()
     paginator = Paginator(post_list, NUMBER_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -93,14 +88,12 @@ def post_edit(request, post_id):
         request.POST or None,
         files=request.FILES or None,
         instance=post)
-    context = {
-        'form': form,
-        'is_edit': True,
-    }
     if form.is_valid():
         form.save(request.POST)
         return redirect('posts:post_detail', post_id=post.id)
-    return render(request, 'posts/create_post.html', context)
+    return render(
+        request, 'posts/create_post.html', {'form': form}, {'is_edit': True}
+    )
 
 
 @login_required
@@ -144,6 +137,5 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     """Отписка."""
     author = get_object_or_404(User, username=username)
-    follow = Follow.objects.filter(user=request.user, author=author)
-    follow.delete()
+    Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username)

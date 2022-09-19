@@ -67,7 +67,7 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(last_post.text, form_data.get('text'))
         self.assertEqual(last_post.author, form_data.get('author'))
         self.assertEqual(last_post.group.id, form_data.get('group'))
-        self.assertEqual(last_post.image, 'posts/small.gif')
+        self.assertEqual(last_post.image.read(), uploaded.open().read())
 
     def test_form_validity_post_edit(self):
         """

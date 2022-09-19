@@ -138,32 +138,24 @@ class PostURLTests(TestCase):
         self.assertEqual(first_object.image, self.post.image)
 
     def test_post_edit_page_show_correct_context(self):
-        """Шаблон post_edit сформирован с правильным контекстом."""
-        response = PostURLTests.author.get(
-            reverse('posts:post_edit', kwargs={'post_id': self.post.id})
-        )
+        """
+        Шаблон post_edit и post_create сформированы
+        с правильным контекстом.
+        """
+        page_name = [
+            (reverse('posts:post_edit', kwargs={'post_id': self.post.id})),
+            (reverse('posts:post_create'))
+        ]
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
-
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(fields, expected)
-
-    def test_post_create_page_show_correct_context(self):
-        """Шаблон post_create сформирован с правильным контекстом."""
-        response = PostURLTests.author.get(reverse('posts:post_create'))
-        form_fields = {
-            'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField,
-        }
-
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(fields, expected)
+        for page in page_name:
+            response = PostURLTests.author.get(page)
+            for value, expected in form_fields.items():
+                with self.subTest(value=value):
+                    fields = response.context.get('form').fields.get(value)
+                    self.assertIsInstance(fields, expected)
 
     def test_post_creation(self):
         """
@@ -236,10 +228,10 @@ class FollowTests(TestCase):
         self.assertEqual(
             follow_count_after_follow, follow_count + NUMBER_OF_FOLLOW
         )
-        last_follow = Follow.objects.last()
-        # last_follow = Follow.objects.all().latest('id')
-        self.assertEqual(last_follow.user.id, self.user_authorized.id)
-        self.assertEqual(last_follow.author.id, self.user_author.id)
+        self.assertTrue(Follow.objects.filter(  
+                        user=self.user_authorized, 
+                        author=self.user_author
+                        ).exists()) 
 
     def test_authorized_user_unfollow_other_users(self):
         """
@@ -263,6 +255,11 @@ class FollowTests(TestCase):
             follow_count_after_follow - NUMBER_OF_FOLLOW,
             follow_count_after_unfollow
         )
+        self.assertFalse(Follow.objects.filter(  
+                        user=self.user_authorized, 
+                        author=self.user_author
+                        ).exists()) 
+
 
     def test_new_post_user_in_follow(self):
         """
@@ -317,12 +314,10 @@ class PaginatorViewsTest(TestCase):
             slug='test-slug',
             description='Тестовое описание группы',
         )
-        for post in range(NUMBER_OF_POSTS_TEST):
-            Post.objects.create(
-                text=f'Тестовый текст №{post}',
+        Post.objects.bulk_create(
+            Post(text=f'Тестовый текст №{post}',
                 author=cls.user_author,
-                group=cls.group
-            )
+                group=cls.group)for post in range(NUMBER_OF_POSTS_TEST))
 
     def test_first_page_contains_ten_records(self):
         cache.clear()
