@@ -1,5 +1,3 @@
-from xml.etree.ElementTree import Comment
-
 from django import forms
 from posts.models import Comment, Post
 

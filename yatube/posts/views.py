@@ -20,7 +20,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    post_list = group.posts.all()
+    post_list = group.posts.all().select_related('author')
     paginator = Paginator(post_list, NUMBER_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -35,7 +35,7 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     following = request.user.is_authenticated and author.following.filter(
         user=request.user).exists()
-    post_list = author.posts.all()
+    post_list = author.posts.all().select_related('group')
     paginator = Paginator(post_list, NUMBER_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -77,6 +77,25 @@ def post_create(request):
         files=request.FILES or None
     )
     return render(request, 'posts/create_post.html', {'form': form})
+
+# @login_required
+# def post_create(request):
+#     if request.method == 'POST':
+#         form = PostForm(
+#             request.POST,
+#             files=request.FILES or None
+#         )
+#         return render(request, 'posts/create_post.html', {'form': form})  
+#     if form.is_valid():
+#         post = form.save(commit=False)
+#         post.author = request.user
+#         post.save()
+#         return redirect('posts:profile', request.user)
+#     # form = PostForm(
+#     #     request.POST or None,
+#     #     files=request.FILES or None
+#     # )
+#     # return render(request, 'posts/create_post.html', {'form': form})
 
 
 @login_required

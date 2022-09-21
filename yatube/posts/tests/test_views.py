@@ -228,10 +228,12 @@ class FollowTests(TestCase):
         self.assertEqual(
             follow_count_after_follow, follow_count + NUMBER_OF_FOLLOW
         )
-        self.assertTrue(Follow.objects.filter(
-                        user=self.user_authorized,
-                        author=self.user_author
-                        ).exists())
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.user_authorized,
+                author=self.user_author
+            ).exists()
+        )
 
     def test_authorized_user_unfollow_other_users(self):
         """

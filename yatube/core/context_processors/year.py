@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime as dt
 
 
 def year(request):
     """Добавляет переменную с текущим годом."""
     return {
-        'year': datetime.now().year
+        'year': dt.now().year
     }

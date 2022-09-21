@@ -3,7 +3,7 @@ from django.db import models
 
 User = get_user_model()
 
-POST_LENGHT = 15
+POST_LENGTH = 15
 
 
 class Group(models.Model):
@@ -41,7 +41,7 @@ class Post(models.Model):
     )
 
     def __str__(self):
-        return self.text[:POST_LENGHT]
+        return self.text[:POST_LENGTH]
 
     class Meta:
         ordering = ['-pub_date']
@@ -84,5 +84,15 @@ class Follow(models.Model):
     )
 
     class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('author')),
+                name='user_cannot_follow_himself'
+            ),
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_following'
+            )
+        ]
         verbose_name = 'Подписчик'
         verbose_name_plural = 'Подписчики'
