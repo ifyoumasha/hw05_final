@@ -78,25 +78,6 @@ def post_create(request):
     )
     return render(request, 'posts/create_post.html', {'form': form})
 
-# @login_required
-# def post_create(request):
-#     if request.method == 'POST':
-#         form = PostForm(
-#             request.POST,
-#             files=request.FILES or None
-#         )
-#         return render(request, 'posts/create_post.html', {'form': form})  
-#     if form.is_valid():
-#         post = form.save(commit=False)
-#         post.author = request.user
-#         post.save()
-#         return redirect('posts:profile', request.user)
-#     # form = PostForm(
-#     #     request.POST or None,
-#     #     files=request.FILES or None
-#     # )
-#     # return render(request, 'posts/create_post.html', {'form': form})
-
 
 @login_required
 def post_edit(request, post_id):
